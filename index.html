@@ -313,6 +313,38 @@ h4 .en{display:block;font-family:var(--en);font-style:normal;font-size:.8rem;col
 .bar .cur{font-size:1.15rem}
 #chart td.s{font-family:var(--ar);font-size:1.25rem}
 .dots .ar{font-size:4.2rem;line-height:1.6}
+
+/* ================= v5: bigger titles + per-section colour ================= */
+/* each h3 section gets its own accent (--sec), carried by its h4s, cards, tables and the handout tab.
+   Accents avoid the content colours (red matn, blue examples, green tanbih, purple i'rab). */
+.expl>*,.spread{--sec:#0B7A75;--sec-bg:#E6F3F2;--sec-ln:#BFDEDB}
+h3{background:var(--sec-bg);border:none;border-right:6px solid var(--sec);border-radius:14px;padding:16px 22px 14px;margin:38px 0 22px;gap:2px 16px}
+.expl>h3:first-child{margin-top:0}
+h3 .num{background:var(--sec);min-width:44px;height:44px;font-size:1.5rem}
+h3 .ar{font-size:2.35rem;color:var(--sec)}
+h3 .en{font-size:1.05rem;letter-spacing:.02em;text-transform:none;font-weight:600;color:var(--ink2)}
+.exer h3{background:none;border-right:none;padding:0 0 10px;border-bottom:2px solid var(--sec);border-radius:0}
+.exer h3 .ar{color:var(--ink)}
+h4{border-right:5px solid var(--sec);padding:2px 16px 2px 0;margin:40px 0 14px}
+h4 .ar{font-size:1.9rem;color:var(--sec);line-height:1.55}
+h4 .en{font-size:1rem;font-weight:600;letter-spacing:.02em;color:var(--sec);opacity:.8}
+.tree>.root{background:var(--sec);font-size:1.6rem}
+.tree .kid{border-top-color:var(--sec)}
+.tree .kid .h{font-size:1.55rem}
+.tree .kid .d{font-size:.95rem}
+.tb th{background:var(--sec-bg);color:var(--sec);font-size:1.02rem;border-bottom:2px solid var(--sec-ln)}
+.tb th .ar{font-size:1.45rem;color:var(--sec)}
+.cell{border-top:4px solid var(--sec)}
+.cell .h{color:var(--sec)}
+.ex .chip small{font-size:.8rem}
+.exer summary{font-size:.9rem}
+.hand-tab{box-shadow:inset 0 -4px 0 var(--sec)}
+.spread.closed .hand-tab{box-shadow:inset -5px 0 0 var(--sec)}
+.spread.sec-start{border-top:2px solid var(--sec-ln)}
+.tb{font-size:1.02rem}
+.tb tbody td:first-child:not(.a){color:var(--sec);font-weight:600;font-size:1.05rem;background:var(--sec-bg)!important;white-space:nowrap}
+.tb tbody td:first-child:not(.a):lang(ar),.tb tbody td:first-child:not(.a) .ar{font-family:var(--ar);font-weight:400}
+
 </style>
 </head>
 <body>
@@ -795,6 +827,15 @@ chart.addEventListener('click',e=>{const td=e.target.closest('td.s');if(td&&char
 document.getElementById('hideBtn').onclick=()=>{chart.classList.add('hide');chart.querySelectorAll('td.s').forEach(t=>t.classList.remove('on'))};
 document.getElementById('showBtn').onclick=()=>{chart.classList.remove('hide')};
 
+
+// per-section accent colours: every element from one h3 to the next shares --sec
+const SEC=[['#0B7A75','#E6F3F2','#BFDEDB'],['#A8650A','#FBF0E1','#EED3AC'],['#A62E6A','#FBEAF2','#EDC3D7'],['#2D5F7A','#E7F0F5','#BCD3E0'],['#6E6418','#F4F1DE','#DDD6A6']];
+document.querySelectorAll('.page.lesson').forEach(les=>{let i=-1;
+  les.querySelectorAll('.spread').forEach(sp=>{const kids=[...sp.querySelectorAll(':scope > .expl > *')];
+    if(kids[0]&&kids[0].tagName==='H3')sp.classList.add('sec-start');
+    const paint=(el,k)=>{const c=SEC[Math.max(k,0)%SEC.length];el.style.setProperty('--sec',c[0]);el.style.setProperty('--sec-bg',c[1]);el.style.setProperty('--sec-ln',c[2])};
+    paint(sp,kids[0]&&kids[0].tagName==='H3'?i+1:i);
+    kids.forEach(el=>{if(el.tagName==='H3'&&!el.closest('.exer'))i++;paint(el,i)})})});
 // handout panels: per-page collapse + global toggle
 const scanBtn=document.getElementById('scanBtn');
 const spreads=[...document.querySelectorAll('.spread')];
