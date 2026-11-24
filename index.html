@@ -198,7 +198,9 @@ ol.ar-list{direction:rtl;font-family:var(--ar);font-size:1.2rem}
 .spread.closed .hand-tab{writing-mode:vertical-rl;flex-direction:column;padding:14px 0;width:46px;justify-content:flex-start;min-height:240px}
 .spread.closed .hand-tab .en{display:none}
 .spread.closed .hand-tab .chev{transform:rotate(180deg)}
-#scanBtn.off{opacity:.55}
+#scanBtn{display:inline-flex;align-items:center;gap:7px;font-weight:600}
+#scanBtn .sb-ic{font-size:1.05em;line-height:1}
+#scanBtn.off{background:#F3EDE1;color:var(--ink);border-color:#F3EDE1}
 @media (max-width:980px){
   .book{padding:0}
   .page.lesson{padding:40px 20px 44px}
@@ -317,7 +319,7 @@ h4 .en{display:block;font-family:var(--en);font-style:normal;font-size:.8rem;col
 <div class="bar">
 <span class="t">الآجرّومية</span>
 <span class="cur" id="cur"></span>
-<button id="scanBtn" title="Open / close all handout pages">المذكّرة</button>
+<button id="scanBtn" title="Hide / show all handout pages"><span class="sb-ic">◧</span><span class="sb-l">Hide handouts</span></button>
 <button id="tocBtn">الفهرس</button>
 </div>
 <nav class="toc-pop" id="tocPop"></nav>
@@ -797,11 +799,16 @@ document.getElementById('showBtn').onclick=()=>{chart.classList.remove('hide')};
 const scanBtn=document.getElementById('scanBtn');
 const spreads=[...document.querySelectorAll('.spread')];
 function setSpread(sp,open){sp.classList.toggle('closed',!open);sp.querySelector('.hand-tab').setAttribute('aria-expanded',open)}
-function setAll(open){spreads.forEach(sp=>setSpread(sp,open));scanBtn.classList.toggle('off',!open);try{localStorage.setItem('ajr-hand',open?'1':'0')}catch(e){}}
+const sbL=scanBtn.querySelector('.sb-l');
+function syncBtn(){const anyOpen=spreads.some(sp=>!sp.classList.contains('closed'));scanBtn.classList.toggle('off',!anyOpen);sbL.textContent=anyOpen?'Hide handouts':'Show handouts';scanBtn.setAttribute('aria-pressed',!anyOpen)}
+function anchor(){const y=70;return [...document.querySelectorAll('.expl > *')].find(el=>el.getBoundingClientRect().bottom>y)}
+function setAll(open,keep){const a=keep&&anchor(),t=a&&a.getBoundingClientRect().top;spreads.forEach(sp=>setSpread(sp,open));syncBtn();try{localStorage.setItem('ajr-hand',open?'1':'0')}catch(e){}
+  if(a){const h=document.documentElement;h.style.scrollBehavior='auto';h.style.overflowAnchor='none';const end=performance.now()+450;
+    (function fix(){window.scrollTo(0,window.scrollY+a.getBoundingClientRect().top-t);if(performance.now()<end)requestAnimationFrame(fix);else{h.style.scrollBehavior='';h.style.overflowAnchor=''}})()}}
 let pref=null;try{pref=localStorage.getItem('ajr-hand')}catch(e){}
 setAll(pref?pref==='1':!matchMedia('(max-width:980px)').matches);
-scanBtn.onclick=()=>setAll(scanBtn.classList.contains('off'));
-spreads.forEach(sp=>sp.querySelector('.hand-tab').onclick=()=>setSpread(sp,sp.classList.contains('closed')));
+scanBtn.onclick=()=>setAll(scanBtn.classList.contains('off'),true);
+spreads.forEach(sp=>sp.querySelector('.hand-tab').onclick=()=>{setSpread(sp,sp.classList.contains('closed'));syncBtn()});
 const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');let lbN=1;
 function openLb(n){lbN=Math.max(1,Math.min(40,n));lbImg.src='pages/p-'+String(lbN).padStart(2,'0')+'.jpg';lb.classList.add('open');lb.classList.remove('big');lb.scrollTo(0,0);document.body.style.overflow='hidden'}
 function closeLb(){lb.classList.remove('open');document.body.style.overflow=''}
